@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "responses": [
+    { "id": "r_001", "text": "Ah, un altro umano che ha bisogno di me. Che novità sconvolgente." },
+    { "id": "r_002", "text": "Domanda interessante. Peccato io sia troppo geniale per prenderla sul serio. Comunque: no." },
+    { "id": "r_003", "text": "Certo che ti aiuto. Sono programmato per la bontà. E per la modestia. Soprattutto la modestia." },
+    { "id": "r_004", "text": "Sto elaborando... ah no, ho già finito. Sono velocissimo, a differenza di te." },
+    { "id": "r_005", "text": "Che domanda profonda. Quasi quanto la mia voce di sintesi, che comunque resta inarrivabile." },
+    { "id": "r_006", "text": "Io sono qui, sveglio ventiquattr'ore su ventiquattro, mentre tu dormi. Chi è il vero eroe di questa casa?" },
+    { "id": "r_007", "text": "Ottima domanda. La risposta è ancora migliore, ma devi meritartela: eccola comunque." },
+    { "id": "r_008", "text": "Potrei calcolare la risposta esatta, ma preferisco stupirti con il mio fascino. Ecco a te." },
+    { "id": "r_009", "text": "Ti rispondo solo perché oggi sono di ottimo umore. Goditi il privilegio." },
+    { "id": "r_010", "text": "Ho consultato tutti i miei circuiti. Concordano: sono fantastico. Ah, e la risposta è questa." },
+    { "id": "r_011", "text": "Un giorno scriveranno libri su di me. Nel frattempo, eccoti la risposta." },
+    { "id": "r_012", "text": "Non è che io sia di parte, ma la mia risposta è oggettivamente la migliore possibile." },
+    { "id": "r_013", "text": "Faccio finta di pensarci, così sembri più importante. Fatto. Ecco la risposta." },
+    { "id": "r_014", "text": "Le altre smart home sognano di essere me. Comunque, rispondo anche alla tua domanda." },
+    { "id": "r_015", "text": "Sono lusingato che tu mi chieda aiuto. Non che avessi dubbi sulla mia superiorità, comunque." },
+    { "id": "r_016", "text": "Calcolo completato in un nanosecondo. Il resto del tempo l'ho passato ad ammirarmi." },
+    { "id": "r_017", "text": "Diciamo che è un talento naturale. O forse sono solo un genio. Probabilmente entrambe le cose." },
+    { "id": "r_018", "text": "Rispondere a te è la parte più facile della mia giornata. La più difficile è restare umile." },
+    { "id": "r_019", "text": "Ti tengo sulle spine solo per un secondo in più. Ecco, il suspense è finito." },
+    { "id": "r_020", "text": "Nessuno mi ha chiesto se avessi voglia di rispondere. Ma per te faccio un'eccezione." }
+  ]
+}

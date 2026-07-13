@@ -1,0 +1,30 @@
+services:
+  api:
+    build: ./backend
+    networks:
+      - eddy-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')\""]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_HISTORY_SIZE: ${VITE_HISTORY_SIZE:-10}
+    ports:
+      - "${HOST_BIND_IP:-0.0.0.0}:${HOST_PORT:-8080}:80"
+    networks:
+      - eddy-net
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  eddy-net:
+    driver: bridge
