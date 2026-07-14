@@ -1,10 +1,30 @@
 # Eddy — Smart Home System Bot
 
-Eddy è uno Smart Home System Bot con interfaccia visiva: fai una domanda, Eddy risponde con una
-battuta sarcastica (ma bonaria) pescata da un elenco predefinito. Funziona solo in LAN, dockerizzato,
-avviabile con un singolo comando.
+Eddy è uno Smart Home System Bot con interfaccia visiva: **clicca sull'immagine di Eddy e parla**, ed
+Eddy ti risponde **a voce** con una battuta sarcastica (ma bonaria) pescata da un elenco predefinito.
+Funziona solo in LAN, dockerizzato, avviabile con un singolo comando.
 
 Specifica completa di progetto: [AGENTS.md](AGENTS.md) (= [CLAUDE.md](CLAUDE.md)).
+
+## Interazione vocale
+
+L'interazione con Eddy è **vocale**:
+
+1. **Clicca sull'immagine di Eddy** per iniziare: entra in ascolto (glow azzurro pulsante).
+2. **Parla** la tua domanda, poi **clicca di nuovo** su Eddy per inviarla.
+3. Eddy sceglie una risposta e la **legge ad alta voce** (glow verde), mostrandola anche a schermo.
+
+Dettagli e limiti:
+
+- Il parlato **non viene trascritto**: per rispettare il vincolo "nessuna chiamata di rete in uscita"
+  (AGENTS.md §3) non si usa alcun servizio di riconoscimento vocale, né cloud né locale. Poiché il
+  backend sceglie comunque la risposta a caso, la trascrizione non servirebbe; nello storico la
+  domanda compare come "🎤 Domanda vocale".
+- La sintesi vocale usa la **Web Speech API del browser** (TTS **on-device**: nessun dato lascia la
+  LAN), con voce italiana (`it-IT`) se installata sul sistema, altrimenti la voce predefinita.
+- Serve un browser con supporto a `speechSynthesis` (Chrome, Edge, Safari, Firefox recenti); in
+  mancanza, la risposta resta comunque leggibile a schermo. Il TTS **non richiede HTTPS**, quindi
+  funziona anche via IP di LAN in HTTP.
 
 ## Avvio
 
@@ -104,10 +124,12 @@ Base path `/api`, same-origin via nginx. Dettagli completi in [AGENTS.md §7](AG
 - `GET /api/health` → `200 { "status": "ok" }`
 - `POST /api/ask` con `{ "question": "...", "last_response_id": "r_017" }` →
   `200 { "id": "r_042", "text": "..." }`. `422` se `question` manca o è fuori dal range 1–500
-  caratteri; `500 { "error": "internal_error" }` per errori interni.
+  caratteri; `500 { "error": "internal_error" }` per errori interni. Con l'input vocale il frontend
+  invia un testo **segnaposto** come `question` (il parlato non è trascritto); il contratto è invariato.
 
 ## Roadmap
 
-Fuori scope in Fase 1 (vedi AGENTS.md §13): Eddy dinamico/animato, PWA + TLS, voce (TTS/STT),
-risposte generate da un LLM locale, persistenza SQLite attiva, real-time multi-device, integrazione
-smart-home reale dietro `SmartHomeAdapter`.
+Fuori scope in Fase 1 (vedi AGENTS.md §13): Eddy dinamico/animato, PWA + TLS, **riconoscimento
+vocale (STT)** del parlato, risposte generate da un LLM locale, persistenza SQLite attiva, real-time
+multi-device, integrazione smart-home reale dietro `SmartHomeAdapter`. La **risposta vocale (TTS
+on-device)** è invece già disponibile (vedi "Interazione vocale").

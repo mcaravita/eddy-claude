@@ -8,3 +8,6 @@ export interface Exchange {
   question: string
   response: AskResponse
 }
+
+// Interaction state of the voice flow: idle → listening → loading → speaking → idle.
+export type EddyMode = 'idle' | 'listening' | 'loading' | 'speaking'

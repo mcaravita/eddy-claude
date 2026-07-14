@@ -9,6 +9,12 @@
 > - Aggiunto: **persistenza opzionale via SQLite** dietro interfaccia `ConversationRepository`, **disattivata di default** (§8ter).
 > - Aggiunto: §0.1 **Decisioni deliberate (non reintrodurre)** — guardrail anti-scope-creep.
 > - Corretto: immagine base Node del frontend → **`node:24-alpine`** (Node 18/20 sono EOL).
+>
+> **Changelog v2.1:**
+> - Modificato: l'interazione passa da testuale a **vocale** — si clicca l'immagine di Eddy e si
+>   parla; Eddy legge la risposta ad alta voce. Adottato **solo TTS on-device** (Web Speech API del
+>   browser); il **riconoscimento vocale/STT resta escluso** per non violare §3 (il parlato non è
+>   trascritto). Aggiornati §1, §2, §6, §7, §13, §14.
 
 ---
 
@@ -46,10 +52,10 @@ Questi elementi sono stati **valutati ed esclusi consapevolmente** dalla Fase 1.
 (sistema smart-home sarcastico, narcisista, che punzecchia tutti; visivamente è la lettera **E**
 con occhi **D D** e completo **Y**).
 
-L'utente apre l'interfaccia da un qualsiasi device della rete di casa, vede Eddy e gli pone una
-domanda in forma testuale. Eddy risponde con una battuta pescata casualmente da un elenco di
-risposte predefinite, nel suo tono: sarcastico, spiritoso, autocelebrativo, ma **bonario e mai offensivo**
-verso l'utente reale.
+L'utente apre l'interfaccia da un qualsiasi device della rete di casa, vede Eddy, **clicca sulla sua
+immagine e gli parla**. Eddy risponde con una battuta pescata casualmente da un elenco di risposte
+predefinite, che **legge ad alta voce** (oltre a mostrarla a schermo), nel suo tono: sarcastico,
+spiritoso, autocelebrativo, ma **bonario e mai offensivo** verso l'utente reale.
 
 Esempi di risposte (voce di Eddy, italiano):
 - «Ah, un altro umano che ha bisogno di me. Che novità sconvolgente.»
@@ -63,7 +69,7 @@ Esempi di risposte (voce di Eddy, italiano):
 
 ### In scope
 - Web app **responsive** che mostra Eddy come **immagine/rappresentazione statica** (nessuna animazione; ammesso al più un glow/cambio colore quando risponde).
-- Campo di input testuale + pulsante "Chiedi a Eddy" (invio anche con tasto Invio).
+- Interazione **vocale**: si clicca l'immagine di Eddy per parlare (un clic avvia l'ascolto, un secondo clic invia); la risposta viene **letta ad alta voce** via TTS on-device del browser. Il parlato **non** è trascritto (§3).
 - Backend che restituisce **una risposta casuale** dall'elenco statico, con **no-repeat** immediato.
 - **Storico** degli ultimi N scambi in interfaccia (client-side, §6).
 - **`SmartHomeAdapter` stub** nel layer di dominio, come seam per il futuro (§8bis).
@@ -71,7 +77,7 @@ Esempi di risposte (voce di Eddy, italiano):
 - **Intera soluzione dockerizzata**, avviabile con un singolo comando.
 
 ### Out of scope (NON implementare ora)
-Vedi §0.1. In sintesi: nessun movimento/animazione complessa, TTS/STT, AI/LLM, controllo dispositivi reale, DB di default, admin panel, auth, PWA, sincronizzazione tra device, esposizione esterna.
+Vedi §0.1. In sintesi: nessun movimento/animazione complessa, **riconoscimento vocale/STT** (il parlato non è trascritto), AI/LLM, controllo dispositivi reale, DB di default, admin panel, auth, PWA, sincronizzazione tra device, esposizione esterna. **Nota:** la risposta vocale (TTS on-device) è ora in scope (vedi "In scope").
 
 ---
 
@@ -142,10 +148,10 @@ Device LAN (browser: PC / tablet / smartphone)
 ## 6. Requisiti funzionali
 
 - **FR-1 — Rendering di Eddy.** Immagine statica (asset locale, es. `frontend/public/eddy.svg`), centrata, responsive. Nome "Eddy" e sottotitolo "Smart Home System – Computer Bot" sempre visibili.
-- **FR-2 — Input domanda.** Campo testo + pulsante "Chiedi a Eddy"; invio anche con Invio. Input vuoto → nessuna chiamata, feedback gentile. Limite 1–500 caratteri.
+- **FR-2 — Input domanda (vocale).** L'utente clicca l'immagine di Eddy per parlare: un clic avvia l'ascolto, un secondo clic invia. Il parlato **non** viene trascritto (§3); al backend si invia un testo segnaposto. Nessun campo di testo in UI.
 - **FR-3 — Risposta casuale.** `POST /api/ask` → risposta pescata a caso dall'elenco statico. Il contenuto della domanda **non** influenza la risposta in Fase 1 (ma va validato).
 - **FR-4 — No-repeat immediato.** La risposta non coincide con l'ultima servita allo stesso client. Implementato **lato backend** via `last_response_id` (§7).
-- **FR-5 — Visualizzazione.** La risposta appare in area dialogo/fumetto vicino a Eddy; stato di caricamento durante la richiesta. Ammesso un glow/cambio colore quando Eddy "risponde".
+- **FR-5 — Visualizzazione + voce.** La risposta appare in area dialogo/fumetto vicino a Eddy **e viene letta ad alta voce** (TTS on-device, voce `it-IT` se disponibile); stato di caricamento durante la richiesta. Glow/cambio colore per gli stati "ascolto" e "risposta".
 - **FR-6 — Storico scambi.** L'interfaccia mostra gli **ultimi N scambi** (default N=10) domanda→risposta, ordine cronologico inverso. **Stato client-side in memoria React**, si azzera al refresh (nessuna persistenza in Fase 1 — vedi §8ter). Solo testo, nessuna analisi.
 - **FR-7 — Gestione errori.** Backend irraggiungibile/errore → messaggio in tono con Eddy (es. «I miei circuiti fanno i capricci. Riprova, umano.»), senza stack trace né dettagli tecnici in UI.
 - **FR-8 — Responsività.** Layout usabile in portrait su smartphone, tablet e desktop. Touch target ≥ 44px.
@@ -164,7 +170,7 @@ Request:
 ```json
 { "question": "Che tempo fa?", "last_response_id": "r_017" }
 ```
-- `question` *(string, obbligatorio, 1–500 char)*: validato lato backend (§9).
+- `question` *(string, obbligatorio, 1–500 char)*: validato lato backend (§9). Con l'input vocale il frontend invia un **segnaposto** (il parlato non è trascritto, §3); il contratto resta invariato.
 - `last_response_id` *(string, opzionale)*: id dell'ultima risposta ricevuta dal client, per il no-repeat.
 
 Response `200`:
@@ -384,7 +390,7 @@ docker compose down               # ferma e rilascia
 
 1. **Eddy dinamico:** animazioni/stati (idle, "parla", "pensa") sincronizzati con la risposta.
 2. **PWA + TLS in LAN:** manifest + service worker una volta introdotto HTTPS (self-signed/`mkcert`), che è il prerequisito tecnico mancante oggi.
-3. **Voce:** TTS/STT **on-device o self-hosted** (per non violare §3).
+3. **Voce:** il **TTS on-device** (risposta parlata) è **già implementato** in Fase 1. Resta lo **STT/riconoscimento vocale** del parlato dell'utente, on-device o self-hosted (per non violare §3).
 4. **Risposte reali:** LLM **locale/self-hosted** in container, con personalità di Eddy via system prompt.
 5. **Persistenza:** attivazione `SqliteConversationRepository` (§8ter) + eventuale admin panel con auth fatta per bene.
 6. **Real-time multi-device:** WebSocket per stato condiviso/broadcast tra client.
@@ -396,7 +402,7 @@ Progetta la Fase 1 senza precludere questi step (risposte data-driven, contratto
 
 ## 14. Assunzioni prese (da confermare/correggere)
 
-- **Input testuale**, non vocale, in Fase 1.
+- **Input vocale** (clic sull'immagine di Eddy): la risposta è letta ad alta voce (TTS on-device); il parlato **non** è trascritto (STT rimandato, §13).
 - **Client indipendenti**, storico client-side, nessuna sincronizzazione tra device.
 - **Stack** = FastAPI + React/Vite + nginx (non negoziabile in Fase 1, §0.1).
 - **Persistenza disattivata** di default (in-memory); SQLite solo su richiesta esplicita.

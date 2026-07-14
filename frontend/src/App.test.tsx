@@ -16,16 +16,17 @@ describe('App', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders Eddy static image and the question input', () => {
+  it('renders Eddy and the voice call-to-action', () => {
     render(<App />)
 
     expect(screen.getByAltText('Eddy')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Eddy' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Chiedi qualcosa a Eddy')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Parla con Eddy' })).toBeInTheDocument()
+    expect(screen.getByText('Clicca su Eddy e parla')).toBeInTheDocument()
   })
 
-  it('shows the loading state while in flight, then the response', async () => {
+  it('speaks the response after two clicks on Eddy, showing the loading state in between', async () => {
     const user = userEvent.setup()
+    const speakSpy = vi.spyOn(window.speechSynthesis, 'speak')
     let resolveFetch: (value: unknown) => void = () => {}
     globalThis.fetch = vi.fn().mockImplementation(
       () =>
@@ -35,34 +36,35 @@ describe('App', () => {
     ) as unknown as typeof fetch
 
     render(<App />)
-    await user.type(screen.getByLabelText('Chiedi qualcosa a Eddy'), 'Che tempo fa?')
-    await user.click(screen.getByRole('button', { name: 'Chiedi a Eddy' }))
+    const eddy = screen.getByRole('button')
+    await user.click(eddy) // idle → listening
+    await user.click(eddy) // listening → send
 
     expect(screen.getByText("Eddy sta elaborando una battuta all'altezza...")).toBeInTheDocument()
 
     resolveFetch({ ok: true, status: 200, json: async () => ({ id: 'r_001', text: 'Fatto.' }) })
 
     expect(await screen.findByText('Fatto.')).toBeInTheDocument()
+    expect(speakSpy).toHaveBeenCalledTimes(1)
+    expect(speakSpy.mock.calls[0][0].text).toBe('Fatto.')
   })
 
-  it('keeps only the last N exchanges in history', async () => {
+  it('keeps only the last N exchanges in history, labelled as voice questions', async () => {
     const user = userEvent.setup()
-    const input = () => screen.getByLabelText('Chiedi qualcosa a Eddy')
-    const button = () => screen.getByRole('button', { name: 'Chiedi a Eddy' })
     render(<App />)
+    const eddy = () => screen.getByRole('button')
 
     for (let i = 0; i < 12; i++) {
       globalThis.fetch = mockFetchOnce({ id: `r_${i}`, text: `Risposta ${i}` }) as unknown as typeof fetch
-      await user.clear(input())
-      await user.type(input(), `Domanda ${i}`)
-      await user.click(button())
+      await user.click(eddy()) // idle → listening
+      await user.click(eddy()) // send
       await waitFor(() => expect(screen.getByText(`Risposta ${i}`)).toBeInTheDocument())
     }
 
-    const historyQuestions = screen.getAllByText(/^Tu: Domanda/)
+    const historyQuestions = screen.getAllByText('Tu: 🎤 Domanda vocale')
     expect(historyQuestions).toHaveLength(10)
-    expect(screen.queryByText('Tu: Domanda 0')).not.toBeInTheDocument()
-    expect(screen.getByText('Tu: Domanda 11')).toBeInTheDocument()
+    expect(screen.getByText('Eddy: Risposta 11')).toBeInTheDocument()
+    expect(screen.queryByText('Eddy: Risposta 0')).not.toBeInTheDocument()
   })
 
   it('shows an in-character error message when the API call fails, without crashing', async () => {
@@ -70,8 +72,9 @@ describe('App', () => {
     globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('network down')) as unknown as typeof fetch
 
     render(<App />)
-    await user.type(screen.getByLabelText('Chiedi qualcosa a Eddy'), 'Ci sei?')
-    await user.click(screen.getByRole('button', { name: 'Chiedi a Eddy' }))
+    const eddy = screen.getByRole('button')
+    await user.click(eddy) // idle → listening
+    await user.click(eddy) // send
 
     expect(await screen.findByText('I miei circuiti fanno i capricci. Riprova, umano.')).toBeInTheDocument()
   })
