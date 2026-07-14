@@ -1,23 +1,21 @@
 .app {
-  max-width: 640px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  justify-content: center;
 }
 
 /* Eddy face */
 
 .eddy-face {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 24px;
+  margin: 0;
+  padding: 0;
   transition: box-shadow 0.2s ease;
+  height: 100vh;
 }
 
 .eddy-face__button {
@@ -25,8 +23,7 @@
   border: none;
   background: none;
   margin: 0;
-  padding: 4px;
-  border-radius: 24px;
+  padding: 0;
   line-height: 0;
   cursor: pointer;
 }
@@ -35,14 +32,13 @@
   cursor: default;
 }
 
-.eddy-face__button:focus-visible {
+/* .eddy-face__button:focus-visible {
   outline: 3px solid #38bdf8;
   outline-offset: 4px;
-}
+} */
 
 .eddy-face__image {
-  /* width: min(45vw, 180px); */
-  height: 100vh;
+  height: 60vh;
 }
 
 /* Animated Eddy character (inline SVG). Strokes use currentColor so the theme
@@ -102,9 +98,9 @@
 /* Interaction states: static glow while loading, pulsing glow while
    listening/speaking (blue = listening, green = speaking). */
 
-.eddy-face--loading {
+/* .eddy-face--loading {
   box-shadow: 0 0 32px 6px rgba(34, 211, 238, 0.55);
-}
+} */
 
 .eddy-face--speaking {
   animation: eddy-pulse-speak 0.85s ease-in-out infinite;
