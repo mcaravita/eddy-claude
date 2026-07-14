@@ -45,6 +45,60 @@
   height: auto;
 }
 
+/* Animated Eddy character (inline SVG). Strokes use currentColor so the theme
+   colour lives in one place; dark slate keeps good contrast on the light page. */
+
+.eddy-character {
+  display: block;
+  color: #1e293b;
+}
+
+.eddy-character .strk {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 24px;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+.eddy-character .feat {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 10px;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+
+/* Eye expressions: shift the whole eye group depending on the state. */
+.eddy-character .eddy-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+
+.eddy-character .eddy-eyes--alert {
+  transform: translateY(-4px) scale(1.08);
+}
+
+.eddy-character .eddy-eyes--thinking {
+  transform: translateY(-8px);
+}
+
+/* Mouth: only the shape flagged as "show" is visible at any time. */
+.eddy-character .eddy-mouth {
+  display: none;
+}
+
+.eddy-character .eddy-mouth--show {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eddy-character .eddy-eyes {
+    transition: none;
+  }
+}
+
 .eddy-face__instruction {
   margin: 0;
   font-size: 0.95rem;
@@ -60,22 +114,8 @@
   box-shadow: 0 0 32px 6px rgba(34, 211, 238, 0.55);
 }
 
-.eddy-face--listening {
-  animation: eddy-pulse-listen 1.2s ease-in-out infinite;
-}
-
 .eddy-face--speaking {
   animation: eddy-pulse-speak 0.85s ease-in-out infinite;
-}
-
-@keyframes eddy-pulse-listen {
-  0%,
-  100% {
-    box-shadow: 0 0 18px 4px rgba(56, 189, 248, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px 10px rgba(56, 189, 248, 0.65);
-  }
 }
 
 @keyframes eddy-pulse-speak {
@@ -89,10 +129,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eddy-face--listening {
-    animation: none;
-    box-shadow: 0 0 32px 6px rgba(56, 189, 248, 0.55);
-  }
   .eddy-face--speaking {
     animation: none;
     box-shadow: 0 0 32px 6px rgba(74, 222, 128, 0.55);
@@ -140,46 +176,3 @@
   color: #64748b;
 }
 
-/* History */
-
-.history {
-  width: 100%;
-}
-
-.history__title {
-  font-size: 1rem;
-  color: #94a3b8;
-  margin: 0 0 8px;
-}
-
-.history__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.history__item {
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: #16213a;
-  border: 1px solid #253248;
-}
-
-.history__question,
-.history__answer {
-  margin: 0;
-  font-size: 0.9rem;
-  overflow-wrap: anywhere;
-}
-
-.history__question {
-  color: #94a3b8;
-  margin-bottom: 4px;
-}
-
-.history__answer {
-  color: #e2e8f0;
-}

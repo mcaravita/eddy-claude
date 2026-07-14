@@ -14,8 +14,6 @@ services:
   web:
     build:
       context: ./frontend
-      args:
-        VITE_HISTORY_SIZE: ${VITE_HISTORY_SIZE:-10}
     ports:
       - "${HOST_BIND_IP:-0.0.0.0}:${HOST_PORT:-8080}:80"
     networks:

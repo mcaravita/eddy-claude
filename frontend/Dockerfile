@@ -7,9 +7,6 @@ RUN npm ci
 
 COPY . .
 
-ARG VITE_HISTORY_SIZE=10
-ENV VITE_HISTORY_SIZE=${VITE_HISTORY_SIZE}
-
 RUN npm run build
 
 FROM nginx:1.27-alpine

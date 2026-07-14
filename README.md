@@ -10,7 +10,7 @@ Specifica completa di progetto: [AGENTS.md](AGENTS.md) (= [CLAUDE.md](CLAUDE.md)
 
 L'interazione con Eddy è **vocale**:
 
-1. **Clicca sull'immagine di Eddy** per iniziare: entra in ascolto (glow azzurro pulsante).
+1. **Clicca sull'immagine di Eddy** per iniziare: entra in ascolto.
 2. **Parla** la tua domanda, poi **clicca di nuovo** su Eddy per inviarla.
 3. Eddy sceglie una risposta e la **legge ad alta voce** (glow verde), mostrandola anche a schermo.
 
@@ -18,8 +18,8 @@ Dettagli e limiti:
 
 - Il parlato **non viene trascritto**: per rispettare il vincolo "nessuna chiamata di rete in uscita"
   (AGENTS.md §3) non si usa alcun servizio di riconoscimento vocale, né cloud né locale. Poiché il
-  backend sceglie comunque la risposta a caso, la trascrizione non servirebbe; nello storico la
-  domanda compare come "🎤 Domanda vocale".
+  backend sceglie comunque la risposta a caso, la trascrizione non servirebbe; al backend viene
+  inviato il segnaposto "🎤 Domanda vocale".
 - La sintesi vocale usa la **Web Speech API del browser** (TTS **on-device**: nessun dato lascia la
   LAN), con voce italiana (`it-IT`) se installata sul sistema, altrimenti la voce predefinita.
 - Serve un browser con supporto a `speechSynthesis` (Chrome, Edge, Safari, Firefox recenti); in
@@ -79,12 +79,6 @@ Le risposte sono data-driven, in [backend/app/data/responses.json](backend/app/d
 Regole: `id` univoci e non vuoti, `text` non vuoto, almeno una risposta presente (validazione
 fail-fast all'avvio del backend). Non serve toccare il codice: basta modificare il file e riavviare
 il container `api` (`docker compose up --build -d api`).
-
-## Storico conversazioni
-
-Lo storico degli ultimi N scambi (default **N=10**, configurabile con `VITE_HISTORY_SIZE` in `.env`)
-è mantenuto **solo lato client** (stato React in memoria) e si azzera al refresh della pagina. Non
-c'è sincronizzazione tra device né persistenza server-side attiva in Fase 1.
 
 ## Persistenza (opzionale, disattivata di default)
 

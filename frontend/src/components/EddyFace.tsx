@@ -1,4 +1,5 @@
 import type { EddyMode } from '../types'
+import { EddyCharacter } from './EddyCharacter'
 
 interface EddyFaceProps {
   mode: EddyMode
@@ -32,7 +33,7 @@ export function EddyFace({ mode, onActivate }: EddyFaceProps) {
         disabled={disabled}
         aria-label={ARIA_LABEL[mode]}
       >
-        <img className="eddy-face__image" src="/eddy.svg" alt="Eddy" width={180} height={210} />
+        <EddyCharacter mode={mode} />
       </button>
       <p className="eddy-face__instruction" aria-live="polite">
         {INSTRUCTION[mode]}

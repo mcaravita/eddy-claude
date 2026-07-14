@@ -1,6 +1,6 @@
 # Eddy — Smart Home System Bot · Specifica di progetto (prompt per Claude Code / Codex)
 
-> **Versione 2.** Documento = specifica + prompt operativo, sorgente di verità del progetto.
+> **Versione 2.2.** Documento = specifica + prompt operativo, sorgente di verità del progetto.
 >
 > **Changelog v2 (rispetto a v1):**
 > - Aggiunto: **storico ultimi N scambi** in UI (§6, client-side).
@@ -15,6 +15,18 @@
 >   parla; Eddy legge la risposta ad alta voce. Adottato **solo TTS on-device** (Web Speech API del
 >   browser); il **riconoscimento vocale/STT resta escluso** per non violare §3 (il parlato non è
 >   trascritto). Aggiornati §1, §2, §6, §7, §13, §14.
+>
+> **Changelog v2.2:**
+> - Implementato: **Eddy dinamico** (anticipa §13.1) — il personaggio è reso come **SVG inline**
+>   (non più `<img>` statica): sbatte le palpebre a intervalli casuali in ogni stato, la bocca a
+>   riposo è sorridente di default con brevi variazioni casuali a chiusa/imbronciata, e durante
+>   `speaking` la bocca cicla tra pose aperte in sincrono con la lettura (lip-sync legato a `mode`,
+>   non all'audio). Sguardo leggermente diverso in `listening`/`loading`.
+> - Rimosso: **storico ultimi N scambi** dall'interfaccia (era FR-6/§6) — nessuna cronologia
+>   mostrata in UI. Il logging degli scambi lato backend (`ConversationRepository`, §8ter) non è
+>   toccato: resta un concetto di dominio, semplicemente non più riflesso in UI.
+> - Rimosso: glow blu nello stato "ascolto" (resta il feedback testuale + la mimica del personaggio).
+> - Aggiornati §2, §6, §10, §12, §13, §14.
 
 ---
 
@@ -68,16 +80,15 @@ Esempi di risposte (voce di Eddy, italiano):
 ## 2. Obiettivo Fase 1 (MVP)
 
 ### In scope
-- Web app **responsive** che mostra Eddy come **immagine/rappresentazione statica** (nessuna animazione; ammesso al più un glow/cambio colore quando risponde).
+- Web app **responsive** che mostra Eddy come **personaggio SVG animato** (inline, non un'immagine statica): sbatte le palpebre e cambia mimica della bocca di continuo (§13.1), muove la bocca in sincrono quando legge la risposta; glow/cambio colore per gli stati di caricamento e risposta.
 - Interazione **vocale**: si clicca l'immagine di Eddy per parlare (un clic avvia l'ascolto, un secondo clic invia); la risposta viene **letta ad alta voce** via TTS on-device del browser. Il parlato **non** è trascritto (§3).
 - Backend che restituisce **una risposta casuale** dall'elenco statico, con **no-repeat** immediato.
-- **Storico** degli ultimi N scambi in interfaccia (client-side, §6).
 - **`SmartHomeAdapter` stub** nel layer di dominio, come seam per il futuro (§8bis).
 - Funzionamento **solo in LAN**, da PC/tablet/smartphone via browser.
 - **Intera soluzione dockerizzata**, avviabile con un singolo comando.
 
 ### Out of scope (NON implementare ora)
-Vedi §0.1. In sintesi: nessun movimento/animazione complessa, **riconoscimento vocale/STT** (il parlato non è trascritto), AI/LLM, controllo dispositivi reale, DB di default, admin panel, auth, PWA, sincronizzazione tra device, esposizione esterna. **Nota:** la risposta vocale (TTS on-device) è ora in scope (vedi "In scope").
+Vedi §0.1. In sintesi: **storico/cronologia in UI**, **riconoscimento vocale/STT** (il parlato non è trascritto), AI/LLM, controllo dispositivi reale, DB di default, admin panel, auth, PWA, sincronizzazione tra device, esposizione esterna. **Nota:** la risposta vocale (TTS on-device) e l'animazione base del personaggio (blink, mimica bocca, lip-sync) sono ora in scope (vedi "In scope"); restano fuori scope animazioni più complesse (gesti, movimento del corpo).
 
 ---
 
@@ -147,14 +158,14 @@ Device LAN (browser: PC / tablet / smartphone)
 
 ## 6. Requisiti funzionali
 
-- **FR-1 — Rendering di Eddy.** Immagine statica (asset locale, es. `frontend/public/eddy.svg`), centrata, responsive. Nome "Eddy" e sottotitolo "Smart Home System – Computer Bot" sempre visibili.
+- **FR-1 — Rendering di Eddy.** Personaggio reso come **SVG inline** (componente `frontend/src/components/EddyCharacter.tsx`), centrato, responsive. Nome "Eddy" e sottotitolo "Smart Home System – Computer Bot" sempre visibili.
 - **FR-2 — Input domanda (vocale).** L'utente clicca l'immagine di Eddy per parlare: un clic avvia l'ascolto, un secondo clic invia. Il parlato **non** viene trascritto (§3); al backend si invia un testo segnaposto. Nessun campo di testo in UI.
 - **FR-3 — Risposta casuale.** `POST /api/ask` → risposta pescata a caso dall'elenco statico. Il contenuto della domanda **non** influenza la risposta in Fase 1 (ma va validato).
 - **FR-4 — No-repeat immediato.** La risposta non coincide con l'ultima servita allo stesso client. Implementato **lato backend** via `last_response_id` (§7).
-- **FR-5 — Visualizzazione + voce.** La risposta appare in area dialogo/fumetto vicino a Eddy **e viene letta ad alta voce** (TTS on-device, voce `it-IT` se disponibile); stato di caricamento durante la richiesta. Glow/cambio colore per gli stati "ascolto" e "risposta".
-- **FR-6 — Storico scambi.** L'interfaccia mostra gli **ultimi N scambi** (default N=10) domanda→risposta, ordine cronologico inverso. **Stato client-side in memoria React**, si azzera al refresh (nessuna persistenza in Fase 1 — vedi §8ter). Solo testo, nessuna analisi.
-- **FR-7 — Gestione errori.** Backend irraggiungibile/errore → messaggio in tono con Eddy (es. «I miei circuiti fanno i capricci. Riprova, umano.»), senza stack trace né dettagli tecnici in UI.
-- **FR-8 — Responsività.** Layout usabile in portrait su smartphone, tablet e desktop. Touch target ≥ 44px.
+- **FR-5 — Visualizzazione + voce.** La risposta appare in area dialogo/fumetto vicino a Eddy **e viene letta ad alta voce** (TTS on-device, voce `it-IT` se disponibile); stato di caricamento durante la richiesta. Glow/cambio colore per gli stati "caricamento" e "risposta" (l'ascolto non ha glow: il feedback è testuale + mimica del personaggio, FR-8).
+- **FR-6 — Gestione errori.** Backend irraggiungibile/errore → messaggio in tono con Eddy (es. «I miei circuiti fanno i capricci. Riprova, umano.»), senza stack trace né dettagli tecnici in UI.
+- **FR-7 — Responsività.** Layout usabile in portrait su smartphone, tablet e desktop. Touch target ≥ 44px.
+- **FR-8 — Personaggio animato (§13.1).** Eddy sbatte le palpebre a intervalli casuali in ogni stato. La bocca a riposo è **sorridente di default** e passa casualmente, per brevi istanti, a **chiusa** o **imbronciata** (lo stesso sorriso ruotato 180°). Lo sguardo cambia leggermente in `listening` (attento) e `loading` (pensieroso). Durante `speaking` la bocca cicla tra pose aperte in sincrono con la lettura (lip-sync legato allo stato `mode`, non all'audio/fonetica). Animazione interamente client-side (CSS + React), nessuna libreria esterna (§3).
 
 ---
 
@@ -315,11 +326,11 @@ eddy/
 │       ├── main.tsx
 │       ├── App.tsx
 │       ├── api.ts                 # client POST /api/ask, GET /api/health
+│       ├── speech.ts              # wrapper Web Speech API (TTS on-device)
 │       └── components/
 │           ├── EddyFace.tsx
-│           ├── AskForm.tsx
-│           ├── ResponseBubble.tsx
-│           └── History.tsx        # ultimi N scambi (client-side)
+│           ├── EddyCharacter.tsx  # personaggio SVG animato (blink, bocca, lip-sync — FR-8)
+│           └── ResponseBubble.tsx
 ```
 
 ---
@@ -367,17 +378,17 @@ docker compose down               # ferma e rilascia
 - `StubSmartHomeAdapter`: `get_devices`/`toggle_device`/`get_temperature` ritornano dati coerenti.
 
 **Test frontend (Vitest + Testing Library):**
-- Render con Eddy statico e input.
+- Render di Eddy e della call-to-action vocale.
 - Invio domanda → loading → risposta (fetch mockata).
-- Storico: dopo N+ invii mostra solo gli ultimi N.
+- Personaggio animato: bocca sorridente di default, cicla tra le pose aperte mentre `speaking` (FR-8).
 - Errore API → messaggio in tono, nessun crash.
 
 **Definition of Done (Fase 1):**
 - [ ] `docker compose up --build` avvia tutto senza errori.
 - [ ] App raggiungibile da un secondo device LAN via `http://<ip>:8080`.
-- [ ] UI mostra Eddy statico, usabile su smartphone/tablet/desktop.
+- [ ] UI mostra Eddy animato, usabile su smartphone/tablet/desktop.
 - [ ] Domanda → risposta casuale coerente col tono; no-repeat funzionante.
-- [ ] Storico ultimi N visibile e corretto.
+- [ ] Eddy anima occhi e bocca (blink, mimica a riposo, lip-sync durante la risposta — FR-8).
 - [ ] `SmartHomeAdapter` stub presente e testato, **non** esposto via API.
 - [ ] Nessuna chiamata di rete in uscita (build offline degli asset).
 - [ ] Backend non pubblica porte; solo `web` esposto.
@@ -388,7 +399,9 @@ docker compose down               # ferma e rilascia
 
 ## 13. Roadmap fasi successive (fuori scope Fase 1)
 
-1. **Eddy dinamico:** animazioni/stati (idle, "parla", "pensa") sincronizzati con la risposta.
+1. **Eddy dinamico:** **implementato** (FR-8) — blink, mimica bocca a riposo (sorriso/chiusa/imbronciata) e
+   lip-sync durante `speaking`, tutti sincronizzati con lo stato `mode`. Restano fuori scope
+   animazioni più complesse (gesti, movimento del corpo, espressioni facciali aggiuntive).
 2. **PWA + TLS in LAN:** manifest + service worker una volta introdotto HTTPS (self-signed/`mkcert`), che è il prerequisito tecnico mancante oggi.
 3. **Voce:** il **TTS on-device** (risposta parlata) è **già implementato** in Fase 1. Resta lo **STT/riconoscimento vocale** del parlato dell'utente, on-device o self-hosted (per non violare §3).
 4. **Risposte reali:** LLM **locale/self-hosted** in container, con personalità di Eddy via system prompt.
@@ -403,9 +416,9 @@ Progetta la Fase 1 senza precludere questi step (risposte data-driven, contratto
 ## 14. Assunzioni prese (da confermare/correggere)
 
 - **Input vocale** (clic sull'immagine di Eddy): la risposta è letta ad alta voce (TTS on-device); il parlato **non** è trascritto (STT rimandato, §13).
-- **Client indipendenti**, storico client-side, nessuna sincronizzazione tra device.
+- **Client indipendenti**, nessuna sincronizzazione tra device.
 - **Stack** = FastAPI + React/Vite + nginx (non negoziabile in Fase 1, §0.1).
 - **Persistenza disattivata** di default (in-memory); SQLite solo su richiesta esplicita.
 - **Lingua delle risposte** = italiano; identificatori e commenti del codice in inglese.
-- **N storico** = 10; **porta host** = 8080 (modificabili via config/`.env`).
+- **Porta host** = 8080 (modificabile via `.env`).
 - **Immagine di Eddy** = asset locale/placeholder ispirato al personaggio, non un asset protetto scaricato da fonti esterne.
