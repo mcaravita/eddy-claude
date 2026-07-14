@@ -155,7 +155,7 @@ export function EddyCharacter({ mode }: EddyCharacterProps) {
         <path
           className={mouthClass('smile')}
           data-pose="smile"
-          d="M 120 140 H 200 A 40 20 0 0 1 120 140 Z"
+          d="M 110 130 H 210 A 50 45 0 0 1 110 130 Z"
         />
         <path
           className={mouthClass('open2')}
@@ -167,11 +167,12 @@ export function EddyCharacter({ mode }: EddyCharacterProps) {
           data-pose="open3"
           d="M 110 130 H 210 A 50 45 0 0 1 110 130 Z"
         />
-        {/* Same path as "smile", rotated 180° around its centre (160,150) to read as a frown. */}
+        {/* Same corners as "smile" (same chord, same height) with the sweep flag flipped,
+            so the arc bulges upward instead of down — a frown, not a shifted smile. */}
         <path
           className={mouthClass('frown')}
           data-pose="frown"
-          d="M 120 140 H 200 A 40 20 0 0 1 120 140 Z"
+          d="M 110 130 H 210 A 50 45 0 0 1 110 130 Z"
           transform="rotate(180 160 150)"
         />
       </g>

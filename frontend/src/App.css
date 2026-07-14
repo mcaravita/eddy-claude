@@ -41,8 +41,8 @@
 }
 
 .eddy-face__image {
-  width: min(45vw, 180px);
-  height: auto;
+  /* width: min(45vw, 180px); */
+  height: 100vh;
 }
 
 /* Animated Eddy character (inline SVG). Strokes use currentColor so the theme
@@ -50,7 +50,7 @@
 
 .eddy-character {
   display: block;
-  color: #1e293b;
+  color: #000;
 }
 
 .eddy-character .strk {
@@ -99,14 +99,6 @@
   }
 }
 
-.eddy-face__instruction {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #94a3b8;
-  text-align: center;
-  min-height: 1.4em;
-}
-
 /* Interaction states: static glow while loading, pulsing glow while
    listening/speaking (blue = listening, green = speaking). */
 
@@ -117,62 +109,3 @@
 .eddy-face--speaking {
   animation: eddy-pulse-speak 0.85s ease-in-out infinite;
 }
-
-@keyframes eddy-pulse-speak {
-  0%,
-  100% {
-    box-shadow: 0 0 20px 5px rgba(74, 222, 128, 0.35);
-  }
-  50% {
-    box-shadow: 0 0 42px 12px rgba(74, 222, 128, 0.7);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .eddy-face--speaking {
-    animation: none;
-    box-shadow: 0 0 32px 6px rgba(74, 222, 128, 0.55);
-  }
-}
-
-.eddy-face__name {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-}
-
-.eddy-face__subtitle {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #94a3b8;
-  text-align: center;
-}
-
-/* Response bubble */
-
-.response-bubble {
-  width: 100%;
-  min-height: 60px;
-  padding: 16px;
-  border-radius: 16px;
-  background: #1e293b;
-  border: 1px solid #334155;
-}
-
-.response-bubble__text,
-.response-bubble__loading,
-.response-bubble__placeholder {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.5;
-}
-
-.response-bubble__loading {
-  color: #94a3b8;
-  font-style: italic;
-}
-
-.response-bubble__placeholder {
-  color: #64748b;
-}
-

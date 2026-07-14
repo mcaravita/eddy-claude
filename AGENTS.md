@@ -1,6 +1,6 @@
 # Eddy — Smart Home System Bot · Specifica di progetto (prompt per Claude Code / Codex)
 
-> **Versione 2.2.** Documento = specifica + prompt operativo, sorgente di verità del progetto.
+> **Versione 2.3.** Documento = specifica + prompt operativo, sorgente di verità del progetto.
 >
 > **Changelog v2 (rispetto a v1):**
 > - Aggiunto: **storico ultimi N scambi** in UI (§6, client-side).
@@ -27,6 +27,17 @@
 >   toccato: resta un concetto di dominio, semplicemente non più riflesso in UI.
 > - Rimosso: glow blu nello stato "ascolto" (resta il feedback testuale + la mimica del personaggio).
 > - Aggiornati §2, §6, §10, §12, §13, §14.
+>
+> **Changelog v2.3:**
+> - Rimosso: **tutto il testo a schermo** — l'istruzione testuale per stato ("Clicca su Eddy e
+>   parla" ecc.) e l'area dialogo/fumetto con la risposta. L'interfaccia mostra **solo il
+>   personaggio animato**: risposta e messaggio d'errore sono comunicati **esclusivamente a voce**
+>   (TTS on-device); il feedback di stato passa da mimica del personaggio + glow + `aria-label` del
+>   pulsante (nessuna live region testuale).
+> - Corretto: bocca sorridente ingrandita; mimica "imbronciata" ora alla **stessa altezza** del
+>   sorriso (stesso arco con la curvatura invertita, non più una rotazione a 180° attorno al centro
+>   — che spostava anche gli angoli della bocca).
+> - Aggiornati §2, §6, §9.
 
 ---
 
@@ -80,7 +91,7 @@ Esempi di risposte (voce di Eddy, italiano):
 ## 2. Obiettivo Fase 1 (MVP)
 
 ### In scope
-- Web app **responsive** che mostra Eddy come **personaggio SVG animato** (inline, non un'immagine statica): sbatte le palpebre e cambia mimica della bocca di continuo (§13.1), muove la bocca in sincrono quando legge la risposta; glow/cambio colore per gli stati di caricamento e risposta.
+- Web app **responsive** che mostra **solo il personaggio SVG animato** (inline, nessun testo a schermo): sbatte le palpebre e cambia mimica della bocca di continuo (§13.1), muove la bocca in sincrono quando legge la risposta; glow/cambio colore per gli stati di caricamento e risposta. Risposta ed errori sono comunicati **esclusivamente a voce** (TTS on-device) — nessuna area di dialogo/testo in UI.
 - Interazione **vocale**: si clicca l'immagine di Eddy per parlare (un clic avvia l'ascolto, un secondo clic invia); la risposta viene **letta ad alta voce** via TTS on-device del browser. Il parlato **non** è trascritto (§3).
 - Backend che restituisce **una risposta casuale** dall'elenco statico, con **no-repeat** immediato.
 - **`SmartHomeAdapter` stub** nel layer di dominio, come seam per il futuro (§8bis).
@@ -158,14 +169,14 @@ Device LAN (browser: PC / tablet / smartphone)
 
 ## 6. Requisiti funzionali
 
-- **FR-1 — Rendering di Eddy.** Personaggio reso come **SVG inline** (componente `frontend/src/components/EddyCharacter.tsx`), centrato, responsive. Nome "Eddy" e sottotitolo "Smart Home System – Computer Bot" sempre visibili.
+- **FR-1 — Rendering di Eddy.** Personaggio reso come **SVG inline** (componente `frontend/src/components/EddyCharacter.tsx`), centrato, responsive. **Nessun testo a schermo**: nessun nome, sottotitolo o altra scritta — solo il personaggio animato.
 - **FR-2 — Input domanda (vocale).** L'utente clicca l'immagine di Eddy per parlare: un clic avvia l'ascolto, un secondo clic invia. Il parlato **non** viene trascritto (§3); al backend si invia un testo segnaposto. Nessun campo di testo in UI.
 - **FR-3 — Risposta casuale.** `POST /api/ask` → risposta pescata a caso dall'elenco statico. Il contenuto della domanda **non** influenza la risposta in Fase 1 (ma va validato).
 - **FR-4 — No-repeat immediato.** La risposta non coincide con l'ultima servita allo stesso client. Implementato **lato backend** via `last_response_id` (§7).
-- **FR-5 — Visualizzazione + voce.** La risposta appare in area dialogo/fumetto vicino a Eddy **e viene letta ad alta voce** (TTS on-device, voce `it-IT` se disponibile); stato di caricamento durante la richiesta. Glow/cambio colore per gli stati "caricamento" e "risposta" (l'ascolto non ha glow: il feedback è testuale + mimica del personaggio, FR-8).
-- **FR-6 — Gestione errori.** Backend irraggiungibile/errore → messaggio in tono con Eddy (es. «I miei circuiti fanno i capricci. Riprova, umano.»), senza stack trace né dettagli tecnici in UI.
+- **FR-5 — Voce, nessun testo a schermo.** La risposta **non è mostrata come testo**: viene **solo letta ad alta voce** (TTS on-device, voce `it-IT` se disponibile); stato di caricamento durante la richiesta. Glow/cambio colore per gli stati "caricamento" e "risposta" (l'ascolto non ha glow: il feedback è solo la mimica del personaggio, FR-8).
+- **FR-6 — Gestione errori.** Backend irraggiungibile/errore → messaggio in tono con Eddy (es. «I miei circuiti fanno i capricci. Riprova, umano.»), **letto ad alta voce** come una risposta normale (coerente con FR-5): nessun testo, stack trace o dettaglio tecnico esposto in UI.
 - **FR-7 — Responsività.** Layout usabile in portrait su smartphone, tablet e desktop. Touch target ≥ 44px.
-- **FR-8 — Personaggio animato (§13.1).** Eddy sbatte le palpebre a intervalli casuali in ogni stato. La bocca a riposo è **sorridente di default** e passa casualmente, per brevi istanti, a **chiusa** o **imbronciata** (lo stesso sorriso ruotato 180°). Lo sguardo cambia leggermente in `listening` (attento) e `loading` (pensieroso). Durante `speaking` la bocca cicla tra pose aperte in sincrono con la lettura (lip-sync legato allo stato `mode`, non all'audio/fonetica). Animazione interamente client-side (CSS + React), nessuna libreria esterna (§3).
+- **FR-8 — Personaggio animato (§13.1).** Eddy sbatte le palpebre a intervalli casuali in ogni stato. La bocca a riposo è **sorridente di default** e passa casualmente, per brevi istanti, a **chiusa** o **imbronciata** (stesso arco del sorriso con la curvatura invertita, stessa altezza/angoli). Lo sguardo cambia leggermente in `listening` (attento) e `loading` (pensieroso). Durante `speaking` la bocca cicla tra pose aperte in sincrono con la lettura (lip-sync legato allo stato `mode`, non all'audio/fonetica). Animazione interamente client-side (CSS + React), nessuna libreria esterna (§3).
 
 ---
 
@@ -278,7 +289,7 @@ Regole:
 - Codice tipizzato ovunque; lint/format configurati (§5).
 - Risposte separate dal codice (§8).
 
-**Accessibilità:** `label` sull'input, contrasto adeguato, focus visibile, area risposta `aria-live="polite"`.
+**Accessibilità:** `aria-label` sul pulsante di Eddy, aggiornato per ogni stato (idle/ascolto/caricamento/risposta); contrasto adeguato; focus visibile. Nessuna area di testo/`aria-live` in UI (FR-5): per utenti di screen reader il feedback di stato passa dall'`aria-label` del pulsante, non da una live region.
 
 **Osservabilità minima:** log strutturati (richiesta ricevuta, `response_id` servito); nessun dato personale.
 

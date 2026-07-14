@@ -6,13 +6,6 @@ interface EddyFaceProps {
   onActivate: () => void
 }
 
-const INSTRUCTION: Record<EddyMode, string> = {
-  idle: 'Clicca su Eddy e parla',
-  listening: 'Ti ascolto… clicca di nuovo quando hai finito',
-  loading: 'Eddy sta elaborando una risposta…',
-  speaking: 'Eddy sta rispondendo… clicca per interromperlo',
-}
-
 const ARIA_LABEL: Record<EddyMode, string> = {
   idle: 'Parla con Eddy',
   listening: 'Invia la domanda vocale',
@@ -35,9 +28,6 @@ export function EddyFace({ mode, onActivate }: EddyFaceProps) {
       >
         <EddyCharacter mode={mode} />
       </button>
-      <p className="eddy-face__instruction" aria-live="polite">
-        {INSTRUCTION[mode]}
-      </p>
     </div>
   )
 }

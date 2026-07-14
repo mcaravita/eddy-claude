@@ -2,7 +2,6 @@ import { useState } from 'react'
 import './App.css'
 import { askEddy } from './api'
 import { EddyFace } from './components/EddyFace'
-import { ResponseBubble } from './components/ResponseBubble'
 import { cancelSpeech, speak } from './speech'
 import type { EddyMode } from './types'
 
@@ -11,24 +10,21 @@ const ERROR_MESSAGE = 'I miei circuiti fanno i capricci. Riprova, umano.'
 const VOICE_PLACEHOLDER = '🎤 Domanda vocale'
 
 export function App() {
-  const [currentText, setCurrentText] = useState<string | null>(null)
   const [lastResponseId, setLastResponseId] = useState<string | null>(null)
   const [mode, setMode] = useState<EddyMode>('idle')
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   async function ask() {
     setMode('loading')
-    setErrorMessage(null)
 
     try {
       const response = await askEddy(VOICE_PLACEHOLDER, lastResponseId)
-      setCurrentText(response.text)
       setLastResponseId(response.id)
       setMode('speaking')
       speak(response.text, { onEnd: () => setMode('idle') })
     } catch {
-      setErrorMessage(ERROR_MESSAGE)
-      setMode('idle')
+      // No on-screen text (character-only UI): the error is spoken instead of displayed.
+      setMode('speaking')
+      speak(ERROR_MESSAGE, { onEnd: () => setMode('idle') })
     }
   }
 
@@ -37,7 +33,6 @@ export function App() {
   function handleEddyClick() {
     switch (mode) {
       case 'idle':
-        setErrorMessage(null)
         setMode('listening')
         break
       case 'listening':
@@ -55,7 +50,6 @@ export function App() {
   return (
     <main className="app">
       <EddyFace mode={mode} onActivate={handleEddyClick} />
-      <ResponseBubble text={errorMessage ?? currentText} loading={mode === 'loading'} />
     </main>
   )
 }
